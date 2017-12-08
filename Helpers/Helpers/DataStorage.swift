@@ -48,7 +48,7 @@ class DataStorage: NSObject {
             }
         }
         
-        return (path + filename)
+        return (path + "/" + filename)
     }
     
     public static func removeFile( forKey key:String, inFolder folder: String? = nil) throws {
