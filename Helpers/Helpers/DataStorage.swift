@@ -8,10 +8,9 @@
 
 import UIKit
 
-class DataStorage: NSObject {
+@objc public class DataStorage: NSObject {
     
-    private static let rootFolderName = "app_v1"
-    private static let lastUpdateKey = "lastUpdateKey_v1"
+    public static var rootFolderName = "app_v1"
     
     // MARK: - Helper Methods
     private static func base64Encoded( _ str: String) -> String? {
@@ -38,7 +37,7 @@ class DataStorage: NSObject {
             throw NSError(domain: "filename", code: 0, userInfo: nil)
         }
         
-        let path = url.path + "/" + rootFolderName + "/" + ( folder ?? folder! + "/" )
+        let path = url.path + "/" + rootFolderName + ( folder == nil ?  "/" : folder! + "/")
         
         if !FileManager.default.fileExists(atPath: path) {
             do {
@@ -59,7 +58,6 @@ class DataStorage: NSObject {
         removeLastUpdateDate(forKey: key, inFolder: folder);
     }
     
-    // MARK: - Save Methods
     public static func saveString(_ str: String, forKey key:String, inFolder folder: String? = nil) throws {
         let path = try self.path(forKey: key, inFolder: folder)
         try str.write(toFile: path, atomically: true, encoding: .utf8)
@@ -80,21 +78,82 @@ class DataStorage: NSObject {
             throw NSError(domain: "The object can not be saved", code: 0, userInfo: nil)
         }
     }
+
+    public static func save<T>(_  obj: T, forKey key:String, inFolder folder: String? = nil) throws where T : Codable{
+        let path = try self.path(forKey: key, inFolder: folder)
+        let archiver = NSKeyedArchiver()
+        try archiver.encodeEncodable(obj, forKey: NSKeyedArchiveRootObjectKey)
+        try archiver.encodedData.write(to: URL(fileURLWithPath: path))
+        saveLastUpdateDate(forKey: key, inFolder: folder)
+    }
+    
+    public static func getKeys( inFolder folder: String?) throws -> [String] {
+        let path1 = try path(forKey: "", inFolder: folder)
+        var array = [String]()
+        let directoryContents = try FileManager.default.contentsOfDirectory(at: URL(fileURLWithPath: path1), includingPropertiesForKeys: [.isDirectoryKey])
+        let filesOnly = directoryContents.filter { (url) -> Bool in
+            do {
+                let resourceValues = try url.resourceValues(forKeys: [.isDirectoryKey])
+                return !resourceValues.isDirectory!
+            } catch { return false }
+        }
+        
+        for url in filesOnly {
+            if let str = base64Decoded(url.lastPathComponent){
+                array.append(str)
+            }
+        }
+        
+        return array
+    }
     
     // MARK: - Load Methods
-    public static func loadString( forKey key:String, inFolder folder: String? = nil) throws -> String? {
-        let path = try self.path(forKey: key, inFolder: folder)
-        return try String(contentsOfFile: path, encoding: .utf8)
+    public static func loadString( forKey key:String, inFolder folder: String? = nil) -> String? {
+        do{
+            let path = try self.path(forKey: key, inFolder: folder)
+            return try String(contentsOfFile: path, encoding: .utf8)
+        }catch{
+            return nil;
+        }
     }
     
-    public static func loadData( forKey key:String, inFolder folder: String? = nil ) throws -> Data?{
-        let path = try self.path(forKey: key, inFolder: folder)
-        return try Data(contentsOf: URL(fileURLWithPath: path))
+    public static func loadData( forKey key:String, inFolder folder: String? = nil ) -> Data?{
+        do{
+            let path = try self.path(forKey: key, inFolder: folder)
+            if FileManager.default.fileExists(atPath: path) {
+                return try Data(contentsOf: URL(fileURLWithPath: path))
+            }
+            return nil
+        }catch{
+            return nil;
+        }
     }
     
-    public static func loadObject( forKey key:String, inFolder folder: String? = nil) throws -> Any?{
-        let path = try self.path(forKey: key, inFolder: folder)
-        return NSKeyedUnarchiver.unarchiveObject(withFile: path)
+    public static func loadObject( forKey key:String, inFolder folder: String? = nil) -> Any?{
+        do{
+            let path = try self.path(forKey: key, inFolder: folder)
+            if FileManager.default.fileExists(atPath: path) {
+                return NSKeyedUnarchiver.unarchiveObject(withFile: path)
+            }
+            return nil
+        }catch{
+            return nil;
+        }
+    }
+    
+    public static func load<T>(_ type: T.Type,  forKey key:String, inFolder folder: String? = nil) -> T?  where T : Decodable{
+        do{
+            let path = try self.path(forKey: key, inFolder: folder)
+            if FileManager.default.fileExists(atPath: path) {
+                
+                let data = try Data(contentsOf: URL(fileURLWithPath: path))
+                let unarchiver = NSKeyedUnarchiver(forReadingWith: data)
+                let someone = try unarchiver.decodeTopLevelDecodable(type, forKey: NSKeyedArchiveRootObjectKey)
+                unarchiver.finishDecoding()
+                return someone
+            }
+        }catch{}
+        return nil
     }
     
     // MARK: - Timestamp Methods
@@ -130,4 +189,5 @@ class DataStorage: NSObject {
         UserDefaults.standard.synchronize()
     }
 }
+
 
