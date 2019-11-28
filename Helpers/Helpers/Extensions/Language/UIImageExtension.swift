@@ -19,7 +19,7 @@ public extension UIImage {
         case highest = 1
     }
     
-    public convenience init?(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) {
+    convenience init?(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) {
         let rect = CGRect(origin: .zero, size: size)
         UIGraphicsBeginImageContextWithOptions(rect.size, false, 0.0)
         color.setFill()
@@ -53,7 +53,7 @@ public extension UIImage {
     }
     
     func jpeg(_ quality: JPEGQuality) -> Data? {
-        return UIImageJPEGRepresentation(self, quality.rawValue)
+        return self.jpegData(compressionQuality: quality.rawValue)
     }
     
 }

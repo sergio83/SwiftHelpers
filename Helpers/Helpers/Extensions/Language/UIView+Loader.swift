@@ -42,8 +42,8 @@ extension UIView{
         if #available(iOS 11, *) {
             let guide = self.safeAreaLayoutGuide
             NSLayoutConstraint.activate([
-                container.topAnchor.constraintEqualToSystemSpacingBelow(guide.topAnchor, multiplier: 0.0),
-                guide.bottomAnchor.constraintEqualToSystemSpacingBelow(container.bottomAnchor, multiplier: 0.0)
+                container.topAnchor.constraint(equalToSystemSpacingBelow: guide.topAnchor, multiplier: 0.0),
+                guide.bottomAnchor.constraint(equalToSystemSpacingBelow: container.bottomAnchor, multiplier: 0.0)
                 ])
             
         } else {
@@ -82,7 +82,7 @@ extension UIView{
         let container = UIView(frame: self.bounds)
         container.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.6)
         
-        let activityIndicatorView = UIActivityIndicatorView(activityIndicatorStyle: .white)
+        let activityIndicatorView = UIActivityIndicatorView(style: .white)
         activityIndicatorView.center = CGPoint(x: container.bounds.size.width / 2.0, y: container.bounds.size.height / 2.0)
         container.addSubview(activityIndicatorView)
         activityIndicatorView.startAnimating()

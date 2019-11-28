@@ -11,18 +11,18 @@ import UIKit
 extension UIViewController {
     
     public func registerKeyboardNotifications(){
-        NotificationCenter.default.addObserver(self, selector: #selector(onKeyboardDidShowNotification), name: .UIKeyboardDidShow, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(onKeyboardWillBeHidden), name: .UIKeyboardWillHide, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onKeyboardDidShowNotification), name: UIResponder.keyboardDidShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onKeyboardWillBeHidden), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     public func removeKeyboardNotifications(){
-        NotificationCenter.default.removeObserver(self, name: .UIKeyboardDidShow, object: nil)
-        NotificationCenter.default.removeObserver(self, name: .UIKeyboardWillHide, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardDidShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     @objc public func onKeyboardDidShowNotification(notification: Notification){
         if let scrollView = scrollViewToAdjustInset(), let info = notification.userInfo {
-            if let keyboardRect = (info[UIKeyboardFrameEndUserInfoKey] as AnyObject).cgRectValue{
+            if let keyboardRect = (info[UIResponder.keyboardFrameEndUserInfoKey] as AnyObject).cgRectValue{
                 let rect = scrollView.convert(keyboardRect, from: nil)
                 var contentInset = scrollView.contentInset
                 contentInset.bottom = rect.size.height + 10

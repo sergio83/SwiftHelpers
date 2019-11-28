@@ -11,7 +11,7 @@ import CoreLocation
 
 public extension CLLocationCoordinate2D {
     
-    public static func createLocationCoordinate2D(latitude: String?, longitude: String?) -> CLLocationCoordinate2D{
+    static func createLocationCoordinate2D(latitude: String?, longitude: String?) -> CLLocationCoordinate2D{
         if let latitude = latitude, let longitude = longitude{
             if let latitude = Double(latitude), let longitude = Double(longitude){
                 return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
